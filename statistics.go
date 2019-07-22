@@ -4,7 +4,6 @@ import (
 	"sort"
 	"strconv"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -34,7 +33,7 @@ type (
 		startTime         time.Time                    // 第一次收到请求的时间(包括成功以及失败)
 		lastRequestTime   time.Time                    // 最后一次收到请求的时间(包括成功以及失败)
 		interval          time.Duration                // 统计时间间隔，影响 CurrentQPS()
-		lock              sync.RWMutex
+		lock              sync.Mutex
 	}
 
 	summaryStatistics struct {
@@ -123,11 +122,10 @@ func newAttackerStatistics(n string) *attackerStatistics {
 
 func (as *attackerStatistics) logSuccess(ret *Result) {
 	as.lock.Lock()
-	defer as.lock.Unlock()
 
 	now := time.Now()
 	t := time.Duration(ret.Duration)
-	atomic.AddInt64(&as.numRequests, 1)
+	as.numRequests++
 
 	if as.startTime.IsZero() {
 		as.startTime = now
@@ -146,6 +144,8 @@ func (as *attackerStatistics) logSuccess(ret *Result) {
 	//as.trendSuccess[now.Unix()]++
 	as.trendSuccess.accumulate(now.Unix(), 1)
 	as.responseTimes[timeDurationToRoundedMillisecond(t)]++
+
+	as.lock.Unlock()
 }
 
 func (as *attackerStatistics) log(ret *Result) {
@@ -158,7 +158,6 @@ func (as *attackerStatistics) log(ret *Result) {
 
 func (as *attackerStatistics) logFailure(ret *Result) {
 	as.lock.Lock()
-	defer as.lock.Unlock()
 
 	now := time.Now()
 	if as.startTime.IsZero() {
@@ -167,9 +166,12 @@ func (as *attackerStatistics) logFailure(ret *Result) {
 	}
 	as.lastRequestTime = now
 
-	atomic.AddInt64(&as.numFailures, 1)
+	//atomic.AddInt64(&as.numFailures, 1)
+	as.numFailures++
 	as.failuresTimes[ret.Error.Error()]++
 	as.trendFailures.accumulate(now.Unix(), 1)
+
+	as.lock.Unlock()
 }
 
 // totalQPS 获取总的QPS
@@ -272,13 +274,12 @@ func (as *attackerStatistics) failRatio() float64 {
 
 // report 打印统计结果
 func (as *attackerStatistics) report(full bool) *AttackerReport {
-	as.lock.RLock()
-	defer as.lock.RUnlock()
+	as.lock.Lock()
 
 	r := &AttackerReport{
 		Name:           as.name,
-		Requests:       atomic.LoadInt64(&as.numRequests),
-		Failures:       atomic.LoadInt64(&as.numFailures),
+		Requests:       as.numRequests,
+		Failures:       as.numFailures,
 		Min:            timeDurationToMillisecond(as.min()),
 		Max:            timeDurationToMillisecond(as.max()),
 		Median:         timeDurationToMillisecond(as.median()),
@@ -298,6 +299,7 @@ func (as *attackerStatistics) report(full bool) *AttackerReport {
 	for _, percent := range timeDistributions {
 		r.Distributions[strconv.FormatFloat(percent, 'f', 2, 64)] = timeDurationToMillisecond(as.percentile(percent))
 	}
+	as.lock.Unlock()
 	return r
 }
 

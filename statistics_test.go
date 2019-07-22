@@ -211,3 +211,13 @@ func TestSummaryStatistics_rest(t *testing.T) {
 	})
 	assert.EqualValues(t, counts, 0)
 }
+
+func BenchmarkAttackerStatistics_logSuccess(b *testing.B) {
+	stats := newAttackerStatistics("foobar")
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			stats.log(newResult("foobar", 10*time.Millisecond, nil))
+		}
+	})
+}
