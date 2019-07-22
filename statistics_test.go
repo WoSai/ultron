@@ -83,7 +83,7 @@ func TestAttackerStatistics_logFailure(t *testing.T) {
 	name := "foobar"
 	stats := newAttackerStatistics(name)
 
-	ret := &Result{Name: name, Duration: int64(10 * time.Millisecond), Error: newAttackerError(name, errors.New("error"))}
+	ret := &Result{Name: name, Duration: int64(10 * time.Millisecond), Error: newAttackerError(errors.New("error"))}
 	stats.log(ret)
 	assert.False(t, stats.startTime.IsZero())
 	assert.Equal(t, stats.startTime, stats.lastRequestTime)
@@ -102,8 +102,8 @@ func TestAttackerStatistics_totalQPS(t *testing.T) {
 
 func TestAttackerStatistics_totalQPSNoSucceed(t *testing.T) {
 	stats := newAttackerStatistics("foobar")
-	stats.logFailure(newResult("foobar", 100*time.Millisecond, newAttackerError("foobar", errors.New("bad"))))
-	stats.logFailure(newResult("foobar", 100*time.Millisecond, newAttackerError("foobar", errors.New("bad"))))
+	stats.logFailure(newResult("foobar", 100*time.Millisecond, newAttackerError(errors.New("bad"))))
+	stats.logFailure(newResult("foobar", 100*time.Millisecond, newAttackerError(errors.New("bad"))))
 	assert.EqualValues(t, 0, stats.totalQPS())
 }
 

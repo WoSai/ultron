@@ -1,18 +1,20 @@
 package ultron
 
-import "time"
+import (
+	"time"
+)
 
-func newAttackerError(a string, err error) *AttackerError {
-	return &AttackerError{Name: a, CausedBy: err.Error()}
+func newAttackerError(err error) *AttackerError {
+	return &AttackerError{CausedBy: err.Error()}
 }
 
-func (ae *AttackerError) Error() string {
-	return ae.CausedBy
+func (m *AttackerError) Error() string {
+	return m.CausedBy
 }
 
 func newResult(n string, d time.Duration, err error) *Result {
 	if err == nil {
 		return &Result{Name: n, Duration: int64(d)}
 	}
-	return &Result{Name: n, Duration: int64(d), Error: newAttackerError(n, err)}
+	return &Result{Name: n, Duration: int64(d), Error: newAttackerError(err)}
 }

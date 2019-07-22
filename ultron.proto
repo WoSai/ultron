@@ -4,7 +4,7 @@ package ultron;
 
 service Ultron {
     rpc Send(stream Result) returns(Ack) {}
-    rpc Subscribe(ClientInfo) returns(stream Message) {}
+    rpc Subscribe(SlaveInfo) returns(stream Message) {}
 }
 
 message Result {
@@ -14,11 +14,10 @@ message Result {
 }
 
 message AttackerError {
-    string name=1;
-    string causedBy=2;
+    string causedBy=1;
 }
 
-message ClientInfo {
+message SlaveInfo {
     string id=1;
 }
 
@@ -27,11 +26,9 @@ message Ack {}
 message Message{
     enum Type {
         Disconnect=0; // 中断连接
-        RefreshConfig=1; // 下发RunnerConfig配置到各个slave
+        RefreshRunnerConfig=1; // 下发RunnerConfig配置到各个slave
         StartAttack=2; // 通知slave开始执行压测
         StopAttack=3;  // 通知slave停止压测
-
-        Ping=9;
     }
     Type type=1;
     bytes data=2;
