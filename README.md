@@ -11,20 +11,30 @@ Go 1.12+
 
 ### **Script**
 
-file path: `example/http/main.go`
+file path: `example/fasthttp/main.go`
 
 ```go
-attacker := ultron.NewHTTPAttacker("benchmark", func() (*http.Request, error) { return http.NewRequest(http.MethodGet, "http://127.0.0.1/", nil) })
-task := ultron.NewTask()
-task.Add(attacker, 1)
+func main() {
+	attacker := ultron.NewFastHTTPAttacker(
+		"benchmark",
+		func(r *fasthttp.Request) error {
+			r.SetRequestURI(api)
+			return nil
+		})
+	task := ultron.NewTask()
+	task.Add(attacker, 1)
 
-ultron.LocalRunner.Config.Concurrence = 1000
-ultron.LocalRunner.Config.HatchRate = 10
-ultron.LocalRunner.Config.MinWait = ultron.ZeroDuration
-ultron.LocalRunner.Config.MaxWait = ultron.ZeroDuration
+	ultron.LocalRunner.Config.MinWait = 2 * time.Second
+	ultron.LocalRunner.Config.MaxWait = 3 * time.Second
+	ultron.LocalRunner.Config.AppendStages(
+		&ultron.Stage{Concurrence: 100, Duration: 3 * time.Minute, HatchRate: 10},
+		&ultron.Stage{Concurrence: 500, Requests: 1000 * 1000, HatchRate: 30},
+		&ultron.Stage{Concurrence: 300, HatchRate: 20},
+	)
 
-ultron.LocalRunner.WithTask(task)
-ultron.LocalRunner.Start()
+	ultron.LocalRunner.WithTask(task)
+	ultron.LocalRunner.Start()
+}
 ```
 
 ### Report
