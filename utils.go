@@ -7,11 +7,11 @@ import (
 func abs(i int) int {
 	if i < 0 {
 		return -i
-	} else {
-		return i
 	}
+	return i
 }
 
+// ShowLogo print ultron logo to console
 func ShowLogo() {
 	fmt.Println(`
       ___           ___       ___           ___           ___           ___     

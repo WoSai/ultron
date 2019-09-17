@@ -42,6 +42,7 @@ type (
 		Done()
 	}
 
+	// Status runer状态
 	Status = uint32
 
 	baseRunner struct {

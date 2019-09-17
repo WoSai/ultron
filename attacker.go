@@ -46,12 +46,14 @@ type (
 	// FastHTTPResponseCheck check fasthttp.Response
 	FastHTTPResponseCheck func(*fasthttp.Response) error
 
+	// CommonFastHTTPClient 对FastHTTPClient的抽象interface
 	CommonFastHTTPClient interface {
 		Do(*fasthttp.Request, *fasthttp.Response) error
 		DoDeadline(*fasthttp.Request, *fasthttp.Response, time.Time) error
 		DoTimeout(*fasthttp.Request, *fasthttp.Response, time.Duration) error
 	}
 
+	// CommonHTTPClient net/http Client的抽象interface
 	CommonHTTPClient interface {
 		Do(r *http.Request) (*http.Response, error)
 	}
