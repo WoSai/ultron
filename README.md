@@ -57,3 +57,16 @@ ultron.LocalRunner.Start()
   }
 }
 ```
+
+## Architecture
+
+### Local Runner
+![LocalRunner](https://my-storage.oss-cn-shanghai.aliyuncs.com/picgo/20200413155141.png)
+
+### Master Runner
+
+![MasterRunner](https://my-storage.oss-cn-shanghai.aliyuncs.com/picgo/20200413155207.png)
+
+### Slave Runer
+
+![SlaveRunner](https://my-storage.oss-cn-shanghai.aliyuncs.com/picgo/20200413155607.png)
